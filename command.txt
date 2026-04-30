@@ -1,0 +1,1 @@
+ffmpeg -f dshow -rtbufsize 100M -i video="HD Camera" -c:v libx264 -preset veryfast -pix_fmt yuv420p -seg_duration 4 -g 120 -keyint_min 120 -window_size 10 -extra_window_size 5 -use_template 1 -use_timeline 1 -streaming 1 manifest.mpd
