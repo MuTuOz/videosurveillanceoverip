@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MPD xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="urn:mpeg:dash:schema:mpd:2011"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xsi:schemaLocation="urn:mpeg:DASH:schema:MPD:2011 http://standards.iso.org/ittf/PubliclyAvailableStandards/MPEG-DASH_schema_files/DASH-MPD.xsd"
+	profiles="urn:mpeg:dash:profile:isoff-live:2011"
+	type="dynamic"
+	minimumUpdatePeriod="PT3S"
+	suggestedPresentationDelay="PT3S"
+	availabilityStartTime="2026-04-30T12:17:51.734Z"
+	publishTime="2026-04-30T12:42:21.323Z"
+	timeShiftBufferDepth="PT39.3S"
+	maxSegmentDuration="PT2.0S"
+	minBufferTime="PT7.8S">
+	<ProgramInformation>
+	</ProgramInformation>
+	<ServiceDescription id="0">
+	</ServiceDescription>
+	<Period id="0" start="PT0.0S">
+		<AdaptationSet id="0" contentType="video" startWithSAP="1" segmentAlignment="true" bitstreamSwitching="true" frameRate="10000000/333333" maxWidth="1280" maxHeight="720" par="16:9">
+			<Representation id="0" mimeType="video/mp4" codecs="avc1.64001f" bandwidth="2892896" width="1280" height="720" sar="1:1">
+				<SegmentTemplate timescale="10000000" availabilityTimeComplete="false" initialization="init-stream$RepresentationID$.m4s" media="chunk-stream$RepresentationID$-$Number%05d$.m4s" startNumber="365">
+					<SegmentTimeline>
+						<S t="14301985698" d="39333294" r="9" />
+					</SegmentTimeline>
+				</SegmentTemplate>
+			</Representation>
+		</AdaptationSet>
+	</Period>
+</MPD>

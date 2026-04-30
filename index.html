@@ -1,0 +1,126 @@
+<html>  
+<body>
+
+<h1>Do you like this Stream?</h1>
+<p>i hope so.</p>
+<video id="videoPlayer" controls>
+
+</video>
+<button id="liveBtn">Jump to Live</button>
+<label for="timeInput">Rewind to time (HH:MM:SS):</label>
+<input type="time" id="timeInput" step="1">
+<button id="rewindBtn">Rewind to time</button>
+<button id="screenshotBtn">Take Screenshot</button>
+
+<script src="dash.all.min.js"></script>
+<script>
+    (function () {
+        var url = "manifest.mpd?t=" + Date.now();
+        window.player = dashjs.MediaPlayer().create();
+        player.updateSettings({
+            debug: {
+                 logLevel: dashjs.Debug.LOG_LEVEL_DEBUG
+            },
+            streaming: {
+                delay: {
+                    liveDelay: 16
+                },
+                liveCatchup: {
+                    maxDrift: 0,
+                    playbackRate: {min: 0.0, max: 0.0},
+                    enabled: false
+                }
+            }
+        });
+        player.initialize(document.querySelector("#videoPlayer"), url, true);
+        document.getElementById("liveBtn").addEventListener("click", function() {
+            var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
+            var settings = player.getSettings();
+            if (dvrInfo) {
+                var liveEdge = dvrInfo.range.end;
+                var liveDelay = settings.streaming.delay.liveDelay;
+                player.seek(liveEdge - liveDelay);
+                player.play();
+                console.log("Jumping to live edge:", liveEdge - liveDelay);
+            }
+            
+        });
+        document.getElementById("rewindBtn").addEventListener("click", function() {
+
+            var timeStr = document.getElementById("timeInput").value;
+
+            if (!timeStr) {
+                alert("Please pick a time first.");
+                return;
+            }
+            
+            var parts = timeStr.split(":");
+            var targetDate = new Date();
+            targetDate.setHours(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2] || "0"), 0);
+            
+            if (targetDate > new Date()) {
+                alert("That time is in the future can't rewind to it.");
+                return;
+            }
+            
+            var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
+            if (!dvrInfo || !dvrInfo.manifestInfo || !dvrInfo.manifestInfo.availableFrom) {
+                console.log("Stream metadata not yet available, try again in a moment.");
+                return;
+            }
+            
+            var availableFromMs = dvrInfo.manifestInfo.availableFrom.getTime();
+            var targetMs = targetDate.getTime();
+            var targetStreamTime = (targetMs - availableFromMs) / 1000;
+            
+            console.log("Target wall-clock:", targetDate);
+            console.log("availableFrom:", dvrInfo.manifestInfo.availableFrom);
+            console.log("Target stream time:", targetStreamTime);
+            console.log("Seekable range:", dvrInfo.range.start, "to", dvrInfo.range.end);
+            
+            if (targetStreamTime < dvrInfo.range.start) {
+                var earliestWallClock = new Date(availableFromMs + dvrInfo.range.start * 1000);
+                alert("That time is outside the buffer. Earliest available is " + earliestWallClock.toLocaleTimeString());
+                return;
+            }
+            if (targetStreamTime > dvrInfo.range.end) {
+                alert("That time is too close to live or in the future.");
+                return;
+            }
+            
+            if (typeof player.seekToPresentationTime === 'function') {
+                player.seekToPresentationTime(targetStreamTime);
+            } else {
+                 player.seek(targetStreamTime);
+            }
+
+            setTimeout(function() {
+                console.log("Player time after seek:", player.time());
+                console.log("Was supposed to be:", targetStreamTime);
+                console.log("Range now:", player.getDashMetrics().getCurrentDVRInfo().range);
+            }, 500);
+            //player.play();
+        });
+        document.getElementById("screenshotBtn").addEventListener("click", function() {
+            var video = document.getElementById("videoPlayer");
+            
+            var canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            var dataUrl = canvas.toDataURL("image/png");
+            
+            var link = document.createElement("a");
+            link.href = dataUrl;
+            link.download = "screenshot_" + Date.now() + ".png";
+            link.click();
+        });
+            
+        
+    })();
+</script>
+</body>
+</html>
