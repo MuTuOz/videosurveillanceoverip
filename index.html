@@ -1,126 +1,457 @@
-<html>  
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Video Surveillance</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0c10;
+      color: #e0e6f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: #0d1117;
+      border-bottom: 1px solid #1e2530;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: #c9d1d9;
+    }
+
+    .brand svg { color: #3b82f6; }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, .12);
+      border: 1px solid rgba(239, 68, 68, .3);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .75rem;
+      font-weight: 600;
+      color: #f87171;
+      letter-spacing: .06em;
+    }
+
+    .live-dot {
+      width: 7px; height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .4; transform: scale(.8); }
+    }
+
+    /* ── Main layout ── */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 20px;
+      gap: 20px;
+    }
+
+    /* ── Camera card ── */
+    .camera-card {
+      width: 100%;
+      max-width: 960px;
+      background: #0d1117;
+      border: 1px solid #1e2530;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .camera-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: #111620;
+      border-bottom: 1px solid #1e2530;
+      font-size: .8rem;
+      color: #8b949e;
+    }
+
+    .cam-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #c9d1d9;
+    }
+
+    .cam-title svg { color: #3b82f6; }
+
+    .cam-meta { font-size: .72rem; }
+
+    /* ── Video wrapper ── */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      aspect-ratio: 16/9;
+    }
+
+    #videoPlayer {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* ── Controls panel ── */
+    .controls-panel {
+      width: 100%;
+      max-width: 960px;
+      background: #0d1117;
+      border: 1px solid #1e2530;
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .divider {
+      width: 1px;
+      height: 36px;
+      background: #1e2530;
+      flex-shrink: 0;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: .82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s ease;
+      letter-spacing: .02em;
+      white-space: nowrap;
+    }
+
+    .btn:active { transform: scale(.97); }
+
+    .btn-live {
+      background: rgba(239, 68, 68, .15);
+      border: 1px solid rgba(239, 68, 68, .35);
+      color: #f87171;
+    }
+    .btn-live:hover { background: rgba(239, 68, 68, .25); border-color: #ef4444; }
+
+    .btn-rewind {
+      background: rgba(59, 130, 246, .15);
+      border: 1px solid rgba(59, 130, 246, .35);
+      color: #60a5fa;
+    }
+    .btn-rewind:hover { background: rgba(59, 130, 246, .25); border-color: #3b82f6; }
+
+    .btn-screenshot {
+      background: rgba(16, 185, 129, .12);
+      border: 1px solid rgba(16, 185, 129, .3);
+      color: #34d399;
+    }
+    .btn-screenshot:hover { background: rgba(16, 185, 129, .22); border-color: #10b981; }
+
+    /* ── Time input ── */
+    .time-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-label {
+      font-size: .78rem;
+      color: #8b949e;
+      white-space: nowrap;
+    }
+
+    #timeInput {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #c9d1d9;
+      padding: 8px 12px;
+      font-size: .82rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+      width: 120px;
+    }
+
+    #timeInput:focus { border-color: #3b82f6; }
+
+    /* ── Toast notification ── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1e2530;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: .82rem;
+      color: #c9d1d9;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.error { border-color: rgba(239,68,68,.5); color: #f87171; }
+    #toast.success { border-color: rgba(16,185,129,.4); color: #34d399; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 14px;
+      font-size: .72rem;
+      color: #3b4350;
+      border-top: 1px solid #1e2530;
+    }
+  </style>
+</head>
 <body>
 
-<h1>Do you like this Stream?</h1>
-<p>i hope so.</p>
-<video id="videoPlayer" controls>
+  <header>
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 10l4.553-2.069A1 1 0 0121 8.845v6.31a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+      </svg>
+      Video Surveillance
+    </div>
+    <div class="live-badge">
+      <span class="live-dot"></span>
+      LIVE
+    </div>
+  </header>
 
-</video>
-<button id="liveBtn">Jump to Live</button>
-<label for="timeInput">Rewind to time (HH:MM:SS):</label>
-<input type="time" id="timeInput" step="1">
-<button id="rewindBtn">Rewind to time</button>
-<button id="screenshotBtn">Take Screenshot</button>
+  <main>
+    <div class="camera-card">
+      <div class="camera-header">
+        <div class="cam-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 4"/>
+          </svg>
+          CAM-01 — USB2.0 HD UVC WebCam
+        </div>
+        <span class="cam-meta">1280 × 720 · 10 FPS · H.264</span>
+      </div>
+      <div class="video-wrapper">
+        <video id="videoPlayer" controls></video>
+      </div>
+    </div>
 
-<script src="dash.all.min.js"></script>
-<script>
+    <div class="controls-panel">
+      <!-- Jump to live -->
+      <div class="controls-group">
+        <button class="btn btn-live" id="liveBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+          Canlıya Git
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Rewind -->
+      <div class="controls-group">
+        <div class="time-input-wrap">
+          <span class="time-label">Geri sar:</span>
+          <input type="time" id="timeInput" step="1" />
+        </div>
+        <button class="btn btn-rewind" id="rewindBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+          </svg>
+          Geri Sar
+        </button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Screenshot -->
+      <div class="controls-group">
+        <button class="btn btn-screenshot" id="screenshotBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/>
+            <line x1="3" y1="9" x2="3" y2="3"/><line x1="3" y1="3" x2="9" y2="3"/>
+            <line x1="21" y1="9" x2="21" y2="3"/><line x1="21" y1="3" x2="15" y2="3"/>
+            <line x1="3" y1="15" x2="3" y2="21"/><line x1="3" y1="21" x2="9" y2="21"/>
+            <line x1="21" y1="15" x2="21" y2="21"/><line x1="21" y1="21" x2="15" y2="21"/>
+          </svg>
+          Ekran Görüntüsü
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer>Video Surveillance over IP &mdash; DASH Streaming</footer>
+
+  <div id="toast"></div>
+
+  <script src="dash.all.min.js"></script>
+  <script>
     (function () {
-        var url = "manifest.mpd?t=" + Date.now();
-        window.player = dashjs.MediaPlayer().create();
-        player.updateSettings({
-            debug: {
-                 logLevel: dashjs.Debug.LOG_LEVEL_DEBUG
-            },
-            streaming: {
-                delay: {
-                    liveDelay: 16
-                },
-                liveCatchup: {
-                    maxDrift: 0,
-                    playbackRate: {min: 0.0, max: 0.0},
-                    enabled: false
-                }
-            }
-        });
-        player.initialize(document.querySelector("#videoPlayer"), url, true);
-        document.getElementById("liveBtn").addEventListener("click", function() {
-            var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
-            var settings = player.getSettings();
-            if (dvrInfo) {
-                var liveEdge = dvrInfo.range.end;
-                var liveDelay = settings.streaming.delay.liveDelay;
-                player.seek(liveEdge - liveDelay);
-                player.play();
-                console.log("Jumping to live edge:", liveEdge - liveDelay);
-            }
-            
-        });
-        document.getElementById("rewindBtn").addEventListener("click", function() {
+      // ── Toast helper ──
+      var toastTimer;
+      function showToast(msg, type) {
+        var el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'show' + (type ? ' ' + type : '');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () { el.className = ''; }, 3000);
+      }
 
-            var timeStr = document.getElementById("timeInput").value;
+      // ── Player init ──
+      var url = "manifest.mpd?t=" + Date.now();
+      window.player = dashjs.MediaPlayer().create();
+      player.updateSettings({
+        debug: { logLevel: dashjs.Debug.LOG_LEVEL_DEBUG },
+        streaming: {
+          delay: { liveDelay: 16 },
+          liveCatchup: {
+            maxDrift: 0,
+            playbackRate: { min: 0.0, max: 0.0 },
+            enabled: false
+          }
+        }
+      });
+      player.initialize(document.querySelector("#videoPlayer"), url, true);
 
-            if (!timeStr) {
-                alert("Please pick a time first.");
-                return;
-            }
-            
-            var parts = timeStr.split(":");
-            var targetDate = new Date();
-            targetDate.setHours(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2] || "0"), 0);
-            
-            if (targetDate > new Date()) {
-                alert("That time is in the future can't rewind to it.");
-                return;
-            }
-            
-            var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
-            if (!dvrInfo || !dvrInfo.manifestInfo || !dvrInfo.manifestInfo.availableFrom) {
-                console.log("Stream metadata not yet available, try again in a moment.");
-                return;
-            }
-            
-            var availableFromMs = dvrInfo.manifestInfo.availableFrom.getTime();
-            var targetMs = targetDate.getTime();
-            var targetStreamTime = (targetMs - availableFromMs) / 1000;
-            
-            console.log("Target wall-clock:", targetDate);
-            console.log("availableFrom:", dvrInfo.manifestInfo.availableFrom);
-            console.log("Target stream time:", targetStreamTime);
-            console.log("Seekable range:", dvrInfo.range.start, "to", dvrInfo.range.end);
-            
-            if (targetStreamTime < dvrInfo.range.start) {
-                var earliestWallClock = new Date(availableFromMs + dvrInfo.range.start * 1000);
-                alert("That time is outside the buffer. Earliest available is " + earliestWallClock.toLocaleTimeString());
-                return;
-            }
-            if (targetStreamTime > dvrInfo.range.end) {
-                alert("That time is too close to live or in the future.");
-                return;
-            }
-            
-            if (typeof player.seekToPresentationTime === 'function') {
-                player.seekToPresentationTime(targetStreamTime);
-            } else {
-                 player.seek(targetStreamTime);
-            }
+      // ── Jump to Live ──
+      document.getElementById("liveBtn").addEventListener("click", function () {
+        var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
+        var settings = player.getSettings();
+        if (dvrInfo) {
+          var liveEdge = dvrInfo.range.end;
+          var liveDelay = settings.streaming.delay.liveDelay;
+          player.seek(liveEdge - liveDelay);
+          player.play();
+          showToast("Canlı yayına atlandı.", "success");
+          console.log("Jumping to live edge:", liveEdge - liveDelay);
+        } else {
+          showToast("DVR verisi henüz hazır değil.", "error");
+        }
+      });
 
-            setTimeout(function() {
-                console.log("Player time after seek:", player.time());
-                console.log("Was supposed to be:", targetStreamTime);
-                console.log("Range now:", player.getDashMetrics().getCurrentDVRInfo().range);
-            }, 500);
-            //player.play();
-        });
-        document.getElementById("screenshotBtn").addEventListener("click", function() {
-            var video = document.getElementById("videoPlayer");
-            
-            var canvas = document.createElement("canvas");
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            
-            var ctx = canvas.getContext("2d");
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            var dataUrl = canvas.toDataURL("image/png");
-            
-            var link = document.createElement("a");
-            link.href = dataUrl;
-            link.download = "screenshot_" + Date.now() + ".png";
-            link.click();
-        });
-            
-        
+      // ── Rewind to time ──
+      document.getElementById("rewindBtn").addEventListener("click", function () {
+        var timeStr = document.getElementById("timeInput").value;
+        if (!timeStr) {
+          showToast("Lütfen önce bir saat seçin.", "error");
+          return;
+        }
+
+        var parts = timeStr.split(":");
+        var targetDate = new Date();
+        targetDate.setHours(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2] || "0"), 0);
+
+        if (targetDate > new Date()) {
+          showToast("Gelecekteki bir zamana geri sarılamaz.", "error");
+          return;
+        }
+
+        var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
+        if (!dvrInfo || !dvrInfo.manifestInfo || !dvrInfo.manifestInfo.availableFrom) {
+          showToast("Stream meta verisi henüz hazır değil, tekrar deneyin.", "error");
+          console.log("Stream metadata not yet available, try again in a moment.");
+          return;
+        }
+
+        var availableFromMs = dvrInfo.manifestInfo.availableFrom.getTime();
+        var targetMs = targetDate.getTime();
+        var targetStreamTime = (targetMs - availableFromMs) / 1000;
+
+        console.log("Target wall-clock:", targetDate);
+        console.log("availableFrom:", dvrInfo.manifestInfo.availableFrom);
+        console.log("Target stream time:", targetStreamTime);
+        console.log("Seekable range:", dvrInfo.range.start, "to", dvrInfo.range.end);
+
+        if (targetStreamTime < dvrInfo.range.start) {
+          var earliestWallClock = new Date(availableFromMs + dvrInfo.range.start * 1000);
+          showToast("En erken izlenebilir zaman: " + earliestWallClock.toLocaleTimeString(), "error");
+          return;
+        }
+        if (targetStreamTime > dvrInfo.range.end) {
+          showToast("Bu zaman canlıya çok yakın veya gelecekte.", "error");
+          return;
+        }
+
+        if (typeof player.seekToPresentationTime === 'function') {
+          player.seekToPresentationTime(targetStreamTime);
+        } else {
+          player.seek(targetStreamTime);
+        }
+
+        showToast(timeStr + " saatine geri sarıldı.", "success");
+
+        setTimeout(function () {
+          console.log("Player time after seek:", player.time());
+          console.log("Was supposed to be:", targetStreamTime);
+          console.log("Range now:", player.getDashMetrics().getCurrentDVRInfo().range);
+        }, 500);
+      });
+
+      // ── Screenshot ──
+      document.getElementById("screenshotBtn").addEventListener("click", function () {
+        var video = document.getElementById("videoPlayer");
+        if (!video.videoWidth) {
+          showToast("Video henüz yüklenmedi.", "error");
+          return;
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+        var link = document.createElement("a");
+        link.href = canvas.toDataURL("image/png");
+        link.download = "screenshot_" + Date.now() + ".png";
+        link.click();
+        showToast("Ekran görüntüsü kaydedildi.", "success");
+      });
     })();
-</script>
+  </script>
 </body>
 </html>
