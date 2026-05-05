@@ -1,0 +1,9 @@
+{
+  "camera_name": "HD Camera",
+  "output_folder": "./dash_output",
+  "server_port": 8000,
+  "framerate": 30,
+  "segment_duration": 4,
+  "window_size": 15,
+  "extra_window_size": 60
+}
