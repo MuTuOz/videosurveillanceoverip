@@ -37,7 +37,6 @@ def main():
     # Make sure the output folder exists
     os.makedirs(output_folder, exist_ok=True)
 
-    manifest_path = os.path.join(output_folder, "manifest.mpd")
 
     ffmpeg_cmd = [
         "ffmpeg",
@@ -59,17 +58,17 @@ def main():
         "-window_size", str(window_size),
         "-extra_window_size", str(extra_window_size),
         "-streaming", "1",
-        manifest_path,
+        "manifest.mpd",
     ]
 
     print("Launching FFmpeg with the following command:\n")
     print("  " + " ".join(ffmpeg_cmd) + "\n")
-    print(f"Manifest will be written to: {manifest_path}")
+    print(f"Manifest will be written to: {os.path.join(output_folder, 'manifest.mpd')}")
     print(f"GOP = framerate * seg_duration = {framerate} * {seg_duration} = {gop}")
     print("Press Ctrl+C ONCE to stop (let FFmpeg finalize cleanly).\n")
 
     try:
-        subprocess.run(ffmpeg_cmd)
+        subprocess.run(ffmpeg_cmd, cwd=output_folder)
     except KeyboardInterrupt:
         print("\nStopped.")
 
