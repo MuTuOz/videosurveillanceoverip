@@ -275,9 +275,9 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 4"/>
           </svg>
-          CAM-01 — USB2.0 HD UVC WebCam
+          
         </div>
-        <span class="cam-meta">1280 × 720 · 10 FPS · H.264</span>
+        <span class="cam-meta"></span>
       </div>
       <div class="video-wrapper">
         <video id="videoPlayer" controls></video>
@@ -289,7 +289,7 @@
       <div class="controls-group">
         <button class="btn btn-live" id="liveBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
-          Canlıya Git
+          Go To Live
         </button>
       </div>
 
@@ -298,14 +298,14 @@
       <!-- Rewind -->
       <div class="controls-group">
         <div class="time-input-wrap">
-          <span class="time-label">Geri sar:</span>
+          <span class="time-label">Rewind:</span>
           <input type="time" id="timeInput" step="1" />
         </div>
         <button class="btn btn-rewind" id="rewindBtn">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
           </svg>
-          Geri Sar
+          Rewind
         </button>
       </div>
 
@@ -321,7 +321,7 @@
             <line x1="3" y1="15" x2="3" y2="21"/><line x1="3" y1="21" x2="9" y2="21"/>
             <line x1="21" y1="15" x2="21" y2="21"/><line x1="21" y1="21" x2="15" y2="21"/>
           </svg>
-          Ekran Görüntüsü
+          Screenshot
         </button>
       </div>
     </div>
@@ -369,10 +369,10 @@
           var liveDelay = settings.streaming.delay.liveDelay;
           player.seek(liveEdge - liveDelay);
           player.play();
-          showToast("Canlı yayına atlandı.", "success");
+          showToast("Jumped to live edge.", "success");
           console.log("Jumping to live edge:", liveEdge - liveDelay);
         } else {
-          showToast("DVR verisi henüz hazır değil.", "error");
+          showToast("DVR data not yet available.", "error");
         }
       });
 
@@ -380,7 +380,7 @@
       document.getElementById("rewindBtn").addEventListener("click", function () {
         var timeStr = document.getElementById("timeInput").value;
         if (!timeStr) {
-          showToast("Lütfen önce bir saat seçin.", "error");
+          showToast("Please select a time first.", "error");
           return;
         }
 
@@ -389,13 +389,13 @@
         targetDate.setHours(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2] || "0"), 0);
 
         if (targetDate > new Date()) {
-          showToast("Gelecekteki bir zamana geri sarılamaz.", "error");
+          showToast("You cannot rewind to a future time.", "error");
           return;
         }
 
         var dvrInfo = player.getDashMetrics().getCurrentDVRInfo();
         if (!dvrInfo || !dvrInfo.manifestInfo || !dvrInfo.manifestInfo.availableFrom) {
-          showToast("Stream meta verisi henüz hazır değil, tekrar deneyin.", "error");
+          showToast("Stream metadata not yet available, try again in a moment.", "error");
           console.log("Stream metadata not yet available, try again in a moment.");
           return;
         }
@@ -411,11 +411,11 @@
 
         if (targetStreamTime < dvrInfo.range.start) {
           var earliestWallClock = new Date(availableFromMs + dvrInfo.range.start * 1000);
-          showToast("En erken izlenebilir zaman: " + earliestWallClock.toLocaleTimeString(), "error");
+          showToast("Earliest available time: " + earliestWallClock.toLocaleTimeString(), "error");
           return;
         }
         if (targetStreamTime > dvrInfo.range.end) {
-          showToast("Bu zaman canlıya çok yakın veya gelecekte.", "error");
+          showToast("This time is too close to live or in the future.", "error");
           return;
         }
 
@@ -425,7 +425,7 @@
           player.seek(targetStreamTime);
         }
 
-        showToast(timeStr + " saatine geri sarıldı.", "success");
+        showToast(timeStr + " hour rewound.", "success");
 
         setTimeout(function () {
           console.log("Player time after seek:", player.time());
@@ -438,7 +438,7 @@
       document.getElementById("screenshotBtn").addEventListener("click", function () {
         var video = document.getElementById("videoPlayer");
         if (!video.videoWidth) {
-          showToast("Video henüz yüklenmedi.", "error");
+          showToast("Video not yet loaded.", "error");
           return;
         }
         var canvas = document.createElement("canvas");
@@ -449,7 +449,7 @@
         link.href = canvas.toDataURL("image/png");
         link.download = "screenshot_" + Date.now() + ".png";
         link.click();
-        showToast("Ekran görüntüsü kaydedildi.", "success");
+        showToast("Screenshot saved.", "success");
       });
     })();
   </script>
