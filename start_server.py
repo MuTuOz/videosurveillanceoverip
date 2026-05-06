@@ -12,7 +12,7 @@ import json
 import os
 import shutil
 import sys
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 
 def main():
@@ -46,7 +46,7 @@ def main():
 
     os.chdir(output_folder)
 
-    server = HTTPServer(("0.0.0.0", port), SimpleHTTPRequestHandler)
+    server = ThreadingHTTPServer(("0.0.0.0", port), SimpleHTTPRequestHandler)
     print(f"Serving {output_folder} at http://localhost:{port}/")
     print(f"Open http://localhost:{port}/index.html in your browser.")
     print("Press Ctrl+C to stop.\n")
