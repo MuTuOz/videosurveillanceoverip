@@ -242,6 +242,7 @@
 
     #toast.error { border-color: rgba(239,68,68,.5); color: #f87171; }
     #toast.success { border-color: rgba(16,185,129,.4); color: #34d399; }
+    #toast.warning { border-color: rgba(234,179,8,.5); color: #facc15; }
 
     /* ── Footer ── */
     footer {
@@ -414,8 +415,23 @@
           showToast("Earliest available time: " + earliestWallClock.toLocaleTimeString(), "error");
           return;
         }
+        var liveDelay = player.getSettings().streaming.delay.liveDelay;
+        var safeLiveEdge = dvrInfo.range.end - liveDelay;
+        
+        // Real future — beyond what the encoder has even produced.
         if (targetStreamTime > dvrInfo.range.end) {
-          showToast("This time is too close to live or in the future.", "error");
+          showToast("Target time is in the future, cannot rewind.", "error");
+          return;
+        }
+        
+        // In the buffer zone — playable content exists but is reserved by liveDelay.
+        if (targetStreamTime > safeLiveEdge) {
+          var safeWallClock = new Date(availableFromMs + safeLiveEdge * 1000);
+          showToast(
+            "Target time is close to live edge (16 sec buffer). Latest playable moment: " 
+            + safeWallClock.toLocaleTimeString(),
+            "warning"
+          );
           return;
         }
 
